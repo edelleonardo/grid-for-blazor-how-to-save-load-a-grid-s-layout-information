@@ -7,7 +7,7 @@
     
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="DevExpress.Blazor" Version="21.2.6" />
+    <PackageReference Include="DevExpress.Blazor" Version="22.1.5030201" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot\images\" />
