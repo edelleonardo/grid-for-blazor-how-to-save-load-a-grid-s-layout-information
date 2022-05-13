@@ -1,7 +1,8 @@
-﻿@page "/grid"
+﻿@page "/"
 
 @using System.Text.Json
 @using SaveAndRestoreLayout.Data
+@using System.Collections.ObjectModel
 @inject WeatherForecastService ForecastService
 @inject IJSRuntime JSRuntime
 @inject UserLayoutManager CurrentLayout
@@ -20,9 +21,9 @@ else
     <div class="row p-2">
         <div class="col-10">
             <p>Save layout automatically <button class="btn btn-light" @onclick="@(async () => { await JSRuntime.InvokeVoidAsync("location.reload"); })">Reload page</button></p>
-
+            <button class="btn btn-light show-column-chooser-button1" @onclick="@ShowColumnChooser_Click1">Show column chooser</button>
                 <DxGrid Data="@forecasts"
-                @ref=GridRef
+                   @ref=GridRef1
                 CssClass="mw-1100" 
                 PageSizeSelectorVisible="true" 
                 PageSizeSelectorAllRowsItemVisible="true"   
@@ -44,9 +45,9 @@ else
     <div class="row p-2">
         <div class="col-10">
             <p>Save layout by a button <button class="btn btn-light" @onclick="@(async () => { await JSRuntime.InvokeVoidAsync("location.reload"); })">Reload page</button></p>
-
+                <button class="btn btn-light show-column-chooser-button2" @onclick="@ShowColumnChooser_Click2">Show column chooser</button>
                 <DxGrid Data="@forecasts"
-                @ref=GridRef
+                @ref=GridRef2
                 CssClass="mw-1100" 
                 PageSizeSelectorVisible="true" 
                 PageSizeSelectorAllRowsItemVisible="true"   
@@ -87,9 +88,10 @@ else
     #region Variables
 
     private WeatherForecast[]? forecasts;
-    IGrid GridRef;
+    IGrid GridRef1;
+    IGrid GridRef2;
     string LocalStorageKey = "sampleKey";
-    private IEnumerable<string> Layouts = new List<string>();
+    private ObservableCollection<string> Layouts = new ObservableCollection<string>();
     private IEnumerable<string> selectedLayout = new List<string>();
     public IEnumerable<string> SelectedLayout {
         get { return selectedLayout; }
@@ -103,6 +105,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        Layouts = new ObservableCollection<string>(CurrentLayout.GetKeyList());
         forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
     }
 
@@ -114,18 +117,18 @@ else
 
     async Task Grid_LayoutAutoSaving(GridPersistentLayoutEventArgs e) {
         var json = JsonSerializer.Serialize(e.Layout);
-         CurrentLayout.UpdateCurrentLayout(json);
+        CurrentLayout.UpdateCurrentLayout(json);
     }
 
 
-  async void SaveLayout() {
+    async void SaveLayout() {
         int newLayoutKey = -1;
         if (Layouts.Count() > 0)
             newLayoutKey = Convert.ToInt32(Layouts.ToList()[Layouts.Count() - 1]) + 1;
         else
             newLayoutKey = 0;
-        CurrentLayout.AddLayout(JsonSerializer.Serialize(GridRef.SaveLayout()), newLayoutKey.ToString());
-        Layouts = CurrentLayout.GetKeyList();
+        CurrentLayout.AddLayout(JsonSerializer.Serialize(GridRef2.SaveLayout()), newLayoutKey.ToString());
+        Layouts = new ObservableCollection<string>(CurrentLayout.GetKeyList());
         await InvokeAsync(StateHasChanged);
     }
 
@@ -137,20 +140,24 @@ else
         if (!string.IsNullOrEmpty(layout))
         {
             var json = JsonSerializer.Deserialize<GridPersistentLayout>(layout);
-            GridRef.LoadLayout(json);
+            GridRef2.LoadLayout(json);
         }
- 
+
     }
     async void RemoveLayout() {
         string selectedLayout = SelectedLayout.ToList()[0];
         CurrentLayout.RemoveLayout(selectedLayout);
-        Layouts = CurrentLayout.GetKeyList();
+        Layouts = new ObservableCollection<string>(CurrentLayout.GetKeyList());
         SelectedLayout = new List<string>();
         await InvokeAsync(StateHasChanged);
     }
 
 
-    void ShowColumnChooser_Click() {
-        GridRef.ShowColumnChooser(".show-column-chooser-button");
+    void ShowColumnChooser_Click1() {
+        GridRef1.ShowColumnChooser(".show-column-chooser-button1");
+    }
+
+    void ShowColumnChooser_Click2() {
+        GridRef2.ShowColumnChooser(".show-column-chooser-button2");
     }
 }
