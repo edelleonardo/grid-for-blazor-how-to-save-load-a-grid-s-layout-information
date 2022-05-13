@@ -110,15 +110,15 @@ else
     }
 
     async Task Grid_LayoutAutoLoading(GridPersistentLayoutEventArgs e) {
-       e.Layout = await LoadLayoutFromLocalStorageAsync();
+        e.Layout = await LoadLayoutFromLocalStorageAsync();
     }
 
 
     async Task Grid_LayoutAutoSaving(GridPersistentLayoutEventArgs e) {
-    await SaveLayoutToLocalStorageAsync(e.Layout);
+        await SaveLayoutToLocalStorageAsync(e.Layout);
     }
 
-   async Task<GridPersistentLayout> LoadLayoutFromLocalStorageAsync() {
+    async Task<GridPersistentLayout> LoadLayoutFromLocalStorageAsync() {
         try {
             var json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", LocalStorageKey);
             return JsonSerializer.Deserialize<GridPersistentLayout>(json);
@@ -156,11 +156,8 @@ else
 
 
     async void SaveLayout() {
-        int newLayoutKey = -1;
-        if (Layouts.Count() > 0)
-            newLayoutKey = Convert.ToInt32(Layouts.ToList()[Layouts.Count() - 1]) + 1;
-        else
-            newLayoutKey = 0;
+        string newLayoutKey = "";
+        newLayoutKey = "Layout " + DateTime.Now.ToString();
         CurrentLayout.AddLayout(JsonSerializer.Serialize(GridRef2.SaveLayout()), newLayoutKey.ToString());
         Layouts = new ObservableCollection<string>(CurrentLayout.GetKeyList());
         await InvokeAsync(StateHasChanged);
