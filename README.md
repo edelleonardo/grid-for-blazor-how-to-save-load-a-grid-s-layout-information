@@ -1,7 +1,9 @@
 # Grid for Blazor - How to save/load a grid's layout information
 
 
-This example illustrates how to use the [LayoutAutoSaving][0] and [LayoutAutoLoading][1] events and the [SaveLayout][3] and [LoadLayout][4] methods to save layout information to some storage. After that this information can be restored and applied to DxGrid. This example also illustrates the capability of the GridPersistentLayout class to modify the saved layout.
+This example illustrates how to use the [LayoutAutoSaving][0] and [LayoutAutoLoading][1] events and the [SaveLayout][3] and [LoadLayout][4] methods to save layout information to some storage. After that this information can be restored and applied to DxGrid. 
+
+This example also illustrates the capability of the GridPersistentLayout class to modify the saved layout.
 
 
 ## Files to Look At
