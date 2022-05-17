@@ -3,6 +3,7 @@
 @using System.Text.Json
 @using SaveAndRestoreLayout.Data
 @using System.Collections.ObjectModel
+@inject NavigationManager uriHelper;
 @inject WeatherForecastService ForecastService
 @inject IJSRuntime JSRuntime
 @inject UserLayoutManager CurrentLayout
@@ -18,9 +19,12 @@
 else
 {
     <div class="container">
-    <div class="row p-2">
+        <div class="row p-2">
         <div class="col-10">
-            <p>Save layout automatically <button class="btn btn-light" @onclick="@(async () => { await JSRuntime.InvokeVoidAsync("location.reload"); })">Reload page</button></p>
+            <p>Save layout automatically<button class="btn btn-light" @onclick="@RefreshPage">Reload page</button></p>
+
+            <p><b>For this grid, a column's GroupIndex parameter is excluded from the list of saved column layout settings. Please see the code in the LayoutAutoSaving event for more information.</b></p>
+
             <button class="btn btn-light show-column-chooser-button1" @onclick="@ShowColumnChooser_Click1">Show column chooser</button>
                 <DxGrid Data="@forecasts"
                    @ref=GridRef1
@@ -44,7 +48,12 @@ else
     </div>
     <div class="row p-2">
         <div class="col-10">
-            <p>Save layout by a button <button class="btn btn-light" @onclick="@(async () => { await JSRuntime.InvokeVoidAsync("location.reload"); })">Reload page</button></p>
+            <p>Save layout by a button <button class="btn btn-light" @onclick="@RefreshPage">Reload page</button></p>
+
+
+              <p><b>For this grid, a column's SortIndex parameter is excluded from the list of saved column layout settings. Please see the code in the SaveLayout method for more information.</b></p>
+
+
                 <button class="btn btn-light show-column-chooser-button2" @onclick="@ShowColumnChooser_Click2">Show column chooser</button>
                 <DxGrid Data="@forecasts"
                 @ref=GridRef2
@@ -115,7 +124,13 @@ else
 
 
     async Task Grid_LayoutAutoSaving(GridPersistentLayoutEventArgs e) {
-        await SaveLayoutToLocalStorageAsync(e.Layout);
+        //Excludes the GroupIndex
+        var layout = e.Layout with {
+                Columns = new GridPersistentLayoutCollection<GridPersistentLayoutColumn>(
+                    e.Layout.Columns.Select(i => i with { GroupIndex = null })
+                )
+        };
+        await SaveLayoutToLocalStorageAsync(layout);
     }
 
     async Task<GridPersistentLayout> LoadLayoutFromLocalStorageAsync() {
@@ -131,6 +146,7 @@ else
 
     async Task SaveLayoutToLocalStorageAsync(GridPersistentLayout layout) {
         try {
+
             var json = JsonSerializer.Serialize(layout);
             await JSRuntime.InvokeVoidAsync("localStorage.setItem", LocalStorageKey, json);
         } catch {
@@ -153,12 +169,19 @@ else
     }
 
 
-
-
     async void SaveLayout() {
         string newLayoutKey = "";
         newLayoutKey = "Layout " + DateTime.Now.ToString();
-        CurrentLayout.AddLayout(JsonSerializer.Serialize(GridRef2.SaveLayout()), newLayoutKey.ToString());
+
+ 
+        //Excludes the column's SortIndex
+        var layout = GridRef2.SaveLayout()  with {
+                Columns = new GridPersistentLayoutCollection<GridPersistentLayoutColumn>(
+                    GridRef2.SaveLayout().Columns.Select(i => i with { SortIndex = null })
+                )
+        };
+
+        CurrentLayout.AddLayout(JsonSerializer.Serialize(layout), newLayoutKey.ToString());
         Layouts = new ObservableCollection<string>(CurrentLayout.GetKeyList());
         await InvokeAsync(StateHasChanged);
     }
@@ -181,6 +204,11 @@ else
         Layouts = new ObservableCollection<string>(CurrentLayout.GetKeyList());
         SelectedLayout = new List<string>();
         await InvokeAsync(StateHasChanged);
+    }
+
+    void RefreshPage()
+    {
+       uriHelper.NavigateTo(uriHelper.Uri, forceLoad: true);
     }
 
 
