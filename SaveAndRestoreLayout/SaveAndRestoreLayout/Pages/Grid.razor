@@ -8,9 +8,6 @@
 @inject IJSRuntime JSRuntime
 @inject UserLayoutManager CurrentLayout
 
-<h2>Save and Restore the grid's layout</h2>
-
-
 
 @if (forecasts == null)
 {
@@ -20,6 +17,10 @@ else
 {
     <div class="container">
         <div class="row p-2">
+
+        <h2>How to save and restore the grid's layout</h2>
+
+
         <div class="col-10">
             <p>Save layout automatically<button class="btn btn-light" @onclick="@RefreshPage">Reload page</button></p>
 
